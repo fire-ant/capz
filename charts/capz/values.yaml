@@ -1,0 +1,28 @@
+controllerManager:
+  manager:
+    image:
+      repository: registry.k8s.io/cluster-api-azure/cluster-api-azure-controller
+      tag: v1.7.2
+  replicas: 1
+kubernetesClusterDomain: cluster.local
+nmi:
+  nmi:
+    image:
+      repository: mcr.microsoft.com/oss/azure/aad-pod-identity/nmi
+      tag: v1.8.14
+    resources:
+      limits:
+        cpu: 200m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 256Mi
+webhookService:
+  ports:
+  - port: 443
+    targetPort: webhook-server
+  type: ClusterIP
+providerArgs:
+  machinePool: false
+  aks: false
+  aksResourceHealth: false

@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "capz.fullname" . }}-nmi
+  labels:
+    cluster.x-k8s.io/provider: infrastructure-azure
+    component: nmi
+    k8s-app: aad-pod-id
+    tier: node
+  {{- include "capz.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      cluster.x-k8s.io/provider: infrastructure-azure
+      component: nmi
+      tier: node
+    {{- include "capz.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        cluster.x-k8s.io/provider: infrastructure-azure
+        component: nmi
+        tier: node
+      {{- include "capz.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - args:
+        - --node=$(NODE_NAME)
+        - --operation-mode=managed
+        - --forceNamespaced
+        - --http-probe-port=8085
+        env:
+        - name: FORCENAMESPACED
+          value: "true"
+        - name: HOST_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: LOG_LEVEL
+          value: DEBUG
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ .Values.kubernetesClusterDomain }}
+        image: {{ .Values.nmi.nmi.image.repository }}:{{ .Values.nmi.nmi.image.tag | default
+          .Chart.AppVersion }}
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8085
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        name: nmi
+        resources: {{- toYaml .Values.nmi.nmi.resources | nindent 10 }}
+        securityContext:
+          capabilities:
+            add:
+            - DAC_READ_SEARCH
+            - NET_ADMIN
+            - NET_RAW
+            drop:
+            - ALL
+          runAsUser: 0
+        volumeMounts:
+        - mountPath: /run/xtables.lock
+          name: iptableslock
+        - mountPath: /etc/default
+          name: default-path
+          readOnly: true
+        - mountPath: /etc/default/kubelet
+          name: kubelet-config
+          readOnly: true
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: true
+      nodeSelector:
+        kubernetes.io/os: linux
+      serviceAccountName: {{ include "capz.fullname" . }}-manager
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/control-plane
+      volumes:
+      - hostPath:
+          path: /run/xtables.lock
+          type: FileOrCreate
+        name: iptableslock
+      - hostPath:
+          path: /etc/default
+          type: DirectoryOrCreate
+        name: default-path
+      - hostPath:
+          path: /etc/default/kubelet
+          type: FileOrCreate
+        name: kubelet-config
