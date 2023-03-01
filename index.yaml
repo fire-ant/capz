@@ -40,6 +40,17 @@ entries:
     urls:
     - https://github.com/fire-ant/capmvm/releases/download/capmvm-0.8.0/capmvm-0.8.0.tgz
     version: 0.8.0
+  capz:
+  - apiVersion: v2
+    appVersion: 1.7.2
+    created: "2023-03-01T00:24:00.790183769Z"
+    description: A Helm Chart for the cluster-api-provider-azure infrastructure provider
+    digest: 9db1b08f5414ec6748510cec8ddd9654be7ddfbff01cae539497ea49a7d51dbf
+    name: capz
+    type: application
+    urls:
+    - https://github.com/fire-ant/capz/releases/download/capz-1.7.2/capz-1.7.2.tgz
+    version: 1.7.2
   dependencies:
   - apiVersion: v1
     appVersion: "1.0"
@@ -575,4 +586,4 @@ entries:
     urls:
     - https://github.com/helm/charts-repo-actions-demo/releases/download/example-v2-0.2.2/example-v2-0.2.2.tgz
     version: 0.2.2
-generated: "2023-02-28T10:58:11.320612234Z"
+generated: "2023-03-01T00:24:00.790414172Z"
